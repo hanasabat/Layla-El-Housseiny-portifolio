@@ -595,6 +595,112 @@
     <span>© 2026 Layla El Housseiny — All rights reserved.</span>
     <span>Docket No. 2026 — LAW · Portfolio v1</span>
   </footer>
+<script>
+    // mobile nav toggle
+    const navToggle = document.getElementById('navToggle');
+    const navTabs = document.getElementById('navTabs');
+    navToggle.addEventListener('click', () => {
+      const open = navTabs.classList.toggle('open');
+      navToggle.classList.toggle('open', open);
+      navToggle.setAttribute('aria-expanded', open);
+    });
+    navTabs.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      navTabs.classList.remove('open');
+      navToggle.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    }));
+
+    // scroll progress rail + active nav link
+    const rail = document.getElementById('progressRail');
+    const navLinks = [...navTabs.querySelectorAll('a')];
+    const sections = navLinks.map(a => document.querySelector(a.getAttribute('href')));
+
+    function onScroll(){
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      rail.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+
+      let current = sections[0];
+      sections.forEach(sec => {
+        if (sec && sec.getBoundingClientRect().top - 120 <= 0) current = sec;
+      });
+      navLinks.forEach(a => a.classList.toggle('active', sections[navLinks.indexOf(a)] === current));
+    }
+    window.addEventListener('scroll', onScroll, { passive:true });
+    onScroll();
+
+    // reveal on scroll
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting){
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => io.observe(el));
+
+    // stamp flip
+    const stamp = document.getElementById('stamp');
+    function toggleStamp(){ stamp.classList.toggle('flipped'); }
+    stamp.addEventListener('click', toggleStamp);
+    stamp.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleStamp(); } });
+
+    // subtle tilt on stamp following cursor (desktop only)
+    if (window.matchMedia('(hover: hover)').matches){
+      stamp.addEventListener('mousemove', (e) => {
+        const r = stamp.getBoundingClientRect();
+        const x = (e.clientX - r.left - r.width/2) / r.width;
+        const y = (e.clientY - r.top - r.height/2) / r.height;
+        const base = stamp.classList.contains('flipped') ? 0 : -9;
+        stamp.style.transform = `rotate(${base + x*6}deg) translate(${x*6}px, ${y*6}px)`;
+      });
+      stamp.addEventListener('mouseleave', () => { stamp.style.transform = ''; });
+    }
+
+    // expandable exhibit cards
+    document.querySelectorAll('.exhibit-card').forEach(card => {
+      function toggle(){
+        const open = card.classList.toggle('open');
+        card.setAttribute('aria-expanded', open);
+      }
+      card.addEventListener('click', toggle);
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); } });
+    });
+
+    // expandable docket rows
+    document.querySelectorAll('.docket-row').forEach(row => {
+      function toggle(){
+        const open = row.classList.toggle('open');
+        row.setAttribute('aria-expanded', open);
+      }
+      row.addEventListener('click', toggle);
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); } });
+    });
+
+    // MUN count-up when in view
+    const munNums = document.querySelectorAll('.mun-item .num');
+    const munIo = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting){
+          const el = entry.target;
+          const target = parseInt(el.dataset.count, 10);
+          let cur = 0;
+          const step = () => {
+            cur += 1;
+            el.textContent = String(cur).padStart(2, '0');
+            if (cur < target) requestAnimationFrame(() => setTimeout(step, 120));
+          };
+          step();
+          munIo.unobserve(el);
+        }
+      });
+    }, { threshold: 0.6 });
+    munNums.forEach(el => munIo.observe(el));
+  </script>
+</body>
+</html>
 
 </body>
 </html>
